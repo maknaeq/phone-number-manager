@@ -216,16 +216,82 @@ mod tests {
 
 //@startuml
 //object "racine" as root
-//object "1" as n1
-//object "1" as n11
-//object "2" as n112
-//n112 : Urgences
-//object "5" as n15
-//n15 : SAMU
-//root --> n1
-//n1 --> n11
-//n11 --> n112
-//n1 --> n15
-//@enduml
-
+//
+//' commun alice bob (numéros qui commençant par 0)
+//object "0" as n0
+// object "4" as n04
+// object "1" as n041
+// object "2" as n0412
+//
+// ' alice : 0412578440
+// object "5" as n04125
+// object "7" as n041257
+// object "8" as n0412578
+// object "4" as n04125784
+// object "4" as n041257844
+// object "0" as n0412578440
+// n0412578440 : alice
+//
+// ' bob : 0412199803
+// object "1" as n04121
+// object "9" as n041219
+// object "9" as n0412199
+// object "8" as n04121998
+// object "0" as n041219980
+// object "3" as n0412199803
+// n0412199803 : bob
+//
+// ' patate : 0468892011
+// object "6" as n046
+// object "8" as n0468
+// object "8" as n04688
+// object "9" as n046889
+// object "2" as n0468892
+// object "0" as n04688920
+// object "1" as n046889201
+// object "1" as n0468892011
+// n0468892011 : patate
+//
+// ' numéro qui commençant par 1
+// object "1" as n1
+// object "1" as n11
+// object "2" as n112
+// n112 : Urgences
+// object "5" as n15
+// n15 : SAMU
+//
+// root --> n0
+// root --> n1
+//
+// n0 --> n04
+// n04 --> n041
+// n04 --> n046
+// n041 --> n0412
+//
+// n0412 --> n04125
+// n04125 --> n041257
+// n041257 --> n0412578
+// n0412578 --> n04125784
+// n04125784 --> n041257844
+// n041257844 --> n0412578440
+//
+// n0412 --> n04121
+// n04121 --> n041219
+// n041219 --> n0412199
+// n0412199 --> n04121998
+// n04121998 --> n041219980
+// n041219980 --> n0412199803
+//
+// n046 --> n0468
+// n0468 --> n04688
+// n04688 --> n046889
+// n046889 --> n0468892
+// n0468892 --> n04688920
+// n04688920 --> n046889201
+// n046889201 --> n0468892011
+//
+// n1 --> n11
+// n11 --> n112
+// n1 --> n15
+// @enduml
 
