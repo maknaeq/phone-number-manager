@@ -210,6 +210,22 @@ mod tests {
 
 
 
-// Écrit le trie dans un fichier PlantUML. (Timothée)
+// Écrit le trie dans un fichier PlantUML. (Timothé)
+
+// Tests plantuml.com pour visualiser l'arbre (SAMU et Urgences pour l'instant)
+
+//@startuml
+//object "racine" as root
+//object "1" as n1
+//object "1" as n11
+//object "2" as n112
+//n112 : Urgences
+//object "5" as n15
+//n15 : SAMU
+//root --> n1
+//n1 --> n11
+//n11 --> n112
+//n1 --> n15
+//@enduml
 
 
