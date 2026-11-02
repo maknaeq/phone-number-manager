@@ -210,88 +210,56 @@ mod tests {
 
 
 
-// Écrit le trie dans un fichier PlantUML. (Timothé)
+// Écrit le trie dans un fichier PlantUML au format MindMap. (Timothé)
 
-// Tests plantuml.com pour visualiser l'arbre (SAMU et Urgences pour l'instant)
+pub fn to_plantuml(trie: &Trie) -> String {
+    let mut text = String::from("@startmindmap\n");
+    add_children(&trie.root, 1, &mut text);
+    text.push_str("@endmindmap\n");
+    text
+}
 
-//@startuml
-//object "racine" as root
-//
-//' commun alice bob (numéros qui commençant par 0)
-//object "0" as n0
-// object "4" as n04
-// object "1" as n041
-// object "2" as n0412
-//
-// ' alice : 0412578440
-// object "5" as n04125
-// object "7" as n041257
-// object "8" as n0412578
-// object "4" as n04125784
-// object "4" as n041257844
-// object "0" as n0412578440
-// n0412578440 : alice
-//
-// ' bob : 0412199803
-// object "1" as n04121
-// object "9" as n041219
-// object "9" as n0412199
-// object "8" as n04121998
-// object "0" as n041219980
-// object "3" as n0412199803
-// n0412199803 : bob
-//
-// ' patate : 0468892011
-// object "6" as n046
-// object "8" as n0468
-// object "8" as n04688
-// object "9" as n046889
-// object "2" as n0468892
-// object "0" as n04688920
-// object "1" as n046889201
-// object "1" as n0468892011
-// n0468892011 : patate
-//
-// ' numéro qui commençant par 1
-// object "1" as n1
-// object "1" as n11
-// object "2" as n112
-// n112 : Urgences
-// object "5" as n15
-// n15 : SAMU
-//
-// root --> n0
-// root --> n1
-//
-// n0 --> n04
-// n04 --> n041
-// n04 --> n046
-// n041 --> n0412
-//
-// n0412 --> n04125
-// n04125 --> n041257
-// n041257 --> n0412578
-// n0412578 --> n04125784
-// n04125784 --> n041257844
-// n041257844 --> n0412578440
-//
-// n0412 --> n04121
-// n04121 --> n041219
-// n041219 --> n0412199
-// n0412199 --> n04121998
-// n04121998 --> n041219980
-// n041219980 --> n0412199803
-//
-// n046 --> n0468
-// n0468 --> n04688
-// n04688 --> n046889
-// n046889 --> n0468892
-// n0468892 --> n04688920
-// n04688920 --> n046889201
-// n046889201 --> n0468892011
-//
-// n1 --> n11
-// n11 --> n112
-// n1 --> n15
-// @enduml
+// construit le children avec une étoile * par niveau. par exemple pour samu on a : "* 1", puis "** 5", puis "*** SAMU"
+fn add_children(node: &Node, depth: usize, text: &mut String) {
+    let stars = "*".repeat(depth);
+    for (digit, child) in node.children() {
+        text.push_str(&format!("{stars} {digit}\n"));
+        if let Some(name) = child.name() {
+            text.push_str(&format!("{stars}* {name}\n"));
+        }
+        add_children(child, depth + 1, text);
+    }
+}
 
+#[cfg(test)]
+mod plantuml_tests {
+    use super::*;
+
+    #[test]
+    fn test_empty_trie() {
+        let trie = Trie::default();
+        assert_eq!(to_plantuml(&trie), "@startmindmap\n@endmindmap\n");
+    }
+
+    #[test]
+    fn test_urgences_and_samu() {
+        // trie avec 112 -> Urgences et 15 -> SAMU
+        let node_112 = Node { children: vec![], name: Some("Urgences".to_string()) };
+        let node_11 = Node { children: vec![('2', node_112)], name: None };
+        let node_15 = Node { children: vec![], name: Some("SAMU".to_string()) };
+        let node_1 = Node { children: vec![('1', node_11), ('5', node_15)], name: None };
+        let mut trie = Trie::default();
+        trie.root.children.push(('1', node_1));
+
+        let expected = "@startmindmap
+                        * 1
+                        ** 1
+                        *** 2
+                        **** Urgences
+                        ** 5
+                        *** SAMU
+                        @endmindmap
+                        ";
+        assert_eq!(to_plantuml(&trie), expected);
+    }
+}
