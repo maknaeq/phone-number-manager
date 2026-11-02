@@ -251,15 +251,18 @@ mod plantuml_tests {
         let mut trie = Trie::default();
         trie.root.children.push(('1', node_1));
 
-        let expected = "@startmindmap
-                        * 1
-                        ** 1
-                        *** 2
-                        **** Urgences
-                        ** 5
-                        *** SAMU
-                        @endmindmap
-                        ";
+        let expected = [
+            "@startmindmap",
+            "* 1",
+            "** 1",
+            "*** 2",
+            "**** Urgences",
+            "** 5",
+            "*** SAMU",
+            "@endmindmap",
+            "",
+        ]
+        .join("\n");
         assert_eq!(to_plantuml(&trie), expected);
     }
 }
