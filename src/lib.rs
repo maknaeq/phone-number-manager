@@ -210,6 +210,59 @@ mod tests {
 
 
 
-// Écrit le trie dans un fichier PlantUML. (Timothée)
+// Écrit le trie dans un fichier PlantUML au format MindMap. (Timothé)
 
+pub fn to_plantuml(trie: &Trie) -> String {
+    let mut text = String::from("@startmindmap\n");
+    add_children(&trie.root, 1, &mut text);
+    text.push_str("@endmindmap\n");
+    text
+}
 
+// construit le children avec une étoile * par niveau. par exemple pour samu on a : "* 1", puis "** 5", puis "*** SAMU"
+fn add_children(node: &Node, depth: usize, text: &mut String) {
+    let stars = "*".repeat(depth);
+    for (digit, child) in node.children() {
+        text.push_str(&format!("{stars} {digit}\n"));
+        if let Some(name) = child.name() {
+            text.push_str(&format!("{stars}* {name}\n"));
+        }
+        add_children(child, depth + 1, text);
+    }
+}
+
+#[cfg(test)]
+mod plantuml_tests {
+    use super::*;
+
+    #[test]
+    fn test_empty_trie() {
+        let trie = Trie::default();
+        assert_eq!(to_plantuml(&trie), "@startmindmap\n@endmindmap\n");
+    }
+
+    #[test]
+    fn test_urgences_and_samu() {
+        // trie avec 112 -> Urgences et 15 -> SAMU
+        let node_112 = Node { children: vec![], name: Some("Urgences".to_string()) };
+        let node_11 = Node { children: vec![('2', node_112)], name: None };
+        let node_15 = Node { children: vec![], name: Some("SAMU".to_string()) };
+        let node_1 = Node { children: vec![('1', node_11), ('5', node_15)], name: None };
+        let mut trie = Trie::default();
+        trie.root.children.push(('1', node_1));
+
+        let expected = [
+            "@startmindmap",
+            "* 1",
+            "** 1",
+            "*** 2",
+            "**** Urgences",
+            "** 5",
+            "*** SAMU",
+            "@endmindmap",
+            "",
+        ]
+        .join("\n");
+        assert_eq!(to_plantuml(&trie), expected);
+    }
+}
