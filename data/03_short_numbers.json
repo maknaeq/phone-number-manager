@@ -1,0 +1,6 @@
+[
+  { "nb": "112", "name": "Urgences" },
+  { "nb": "15", "name": "SAMU" },
+  { "nb": "17", "name": "Police" },
+  { "nb": "18", "name": "Pompiers" }
+]
