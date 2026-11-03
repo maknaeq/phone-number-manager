@@ -13,12 +13,41 @@ pub struct Node {
 }
 
 impl Node {
-    pub fn children(&self) -> impl Iterator<Item = (char, &Node)> {
-        self.children.iter().map(|(digit, node)| (*digit, node))
+    pub fn children(&self) -> Vec<(char, &Node)> {
+        let mut result = Vec::new();
+        for (digit, node) in &self.children {
+            result.push((*digit, node));
+        }
+        result
     }
 
     pub fn name(&self) -> Option<&str> {
-        self.name.as_deref()
+        match &self.name {
+            Some(name) => Some(name),
+            None => None,
+        }
+    }
+
+    fn find_child(&self, digit: char) -> Option<&Node> {
+        for (child_digit, node) in &self.children {
+            if *child_digit == digit {
+                return Some(node);
+            }
+        }
+        None
+    }
+
+    fn find_or_create_child(&mut self, digit: char) -> &mut Node {
+        let mut index = 0;
+        while index < self.children.len() {
+            if self.children[index].0 == digit {
+                return &mut self.children[index].1;
+            }
+            index = index + 1;
+        }
+
+        self.children.push((digit, Node::default()));
+        &mut self.children[index].1
     }
 }
 
@@ -29,30 +58,49 @@ pub struct Trie {
 }
 
 impl Trie {
-    pub fn new() -> Self {
-        todo!()
+    pub fn new() -> Trie {
+        Trie {
+            root: Node::default(),
+            len: 0,
+        }
     }
 
     pub fn insert(&mut self, number: &str, name: &str) -> Option<String> {
-        let _ = (number, name);
-        todo!()
+        let mut node = &mut self.root;
+        for digit in number.chars() {
+            node = node.find_or_create_child(digit);
+        }
+
+        let old_name = node.name.clone();
+        node.name = Some(name.to_string());
+
+        if old_name == None {
+            self.len = self.len + 1;
+        }
+        old_name
     }
 
     pub fn get(&self, number: &str) -> Option<&str> {
-        let _ = number;
-        todo!()
+        let mut node = &self.root;
+        for digit in number.chars() {
+            match node.find_child(digit) {
+                Some(child) => node = child,
+                None => return None,
+            }
+        }
+        node.name()
     }
 
     pub fn len(&self) -> usize {
-        todo!()
+        self.len
     }
 
     pub fn is_empty(&self) -> bool {
-        todo!()
+        self.len == 0
     }
 
     pub fn root(&self) -> &Node {
-        todo!()
+        &self.root
     }
 }
 
