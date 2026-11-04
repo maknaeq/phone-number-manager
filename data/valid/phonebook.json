@@ -1,0 +1,12 @@
+[
+  { "nb": "0145678901", "name": "Bureau Paris" },
+  { "nb": "0145678902", "name": "Accueil Paris" },
+  { "nb": "0478123456", "name": "Bureau Lyon" },
+  { "nb": "0612345678", "name": "Alice" },
+  { "nb": "0687654321", "name": "Bob" },
+  { "nb": "0711223344", "name": "Chloé" },
+  { "nb": "112", "name": "Urgences" },
+  { "nb": "15", "name": "SAMU" },
+  { "nb": "17", "name": "Police" },
+  { "nb": "18", "name": "Pompiers" }
+]
