@@ -1,5 +1,6 @@
-use phone_number_manager::read_contacts;
+use phone_number_manager::{build_trie, read_contacts, to_plantuml};
 use std::env;
+use std::path::Path;
 use std::process;
 
 fn main() {
@@ -11,12 +12,23 @@ fn main() {
 
     let path = &args[0];
 
-    match read_contacts(path) {
-        Ok(contacts) => {
-            println!("{:#?}", contacts);
-        }
+    let contacts = match read_contacts(path) {
+        Ok(contacts) => contacts,
         Err(e) => {
             eprintln!("Erreur en lisant {} : {}", path, e);
+            process::exit(1);
+        }
+    };
+
+    let trie = build_trie(&contacts);
+    let text = to_plantuml(&trie);
+    let name = Path::new(path).file_stem().unwrap().to_str().unwrap();
+    let output = format!("graph/{}.puml", name);
+
+    match std::fs::write(&output, text) {
+        Ok(()) => println!("graph écrit dans le fichier {}", output),
+        Err(e) => {
+            eprintln!("une erreur est survenue à l'écriture : {}", e);
             process::exit(1);
         }
     }

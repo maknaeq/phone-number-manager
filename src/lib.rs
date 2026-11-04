@@ -298,6 +298,15 @@ mod json_tests {
 
 // Écrit le trie dans un fichier PlantUML au format MindMap. (Timothé)
 
+// On met chaque contact dans le trie.
+pub fn build_trie(contacts: &Vec<Contact>) -> Trie {
+    let mut trie = Trie::new();
+    for contact in contacts {
+        trie.insert(&contact.nb, &contact.name);
+    }
+    trie
+}
+
 pub fn to_plantuml(trie: &Trie) -> String {
     let mut text = String::from("@startmindmap\n");
     add_children(&trie.root, 1, &mut text);
@@ -350,5 +359,37 @@ mod plantuml_tests {
         ]
         .join("\n");
         assert_eq!(to_plantuml(&trie), expected);
+    }
+
+    #[test]
+    fn test_number_inside_another() {
+        // 112 est le début de 1123 donc le nom "Urgences" est au milieu de la branche
+        let mut trie = Trie::new();
+        trie.insert("112", "Urgences");
+        trie.insert("1123", "Standard");
+
+        let expected = [
+            "@startmindmap",
+            "* 1",
+            "** 1",
+            "*** 2",
+            "**** Urgences",
+            "**** 3",
+            "***** Standard",
+            "@endmindmap",
+            "",
+        ]
+        .join("\n");
+        assert_eq!(to_plantuml(&trie), expected);
+    }
+
+    #[test]
+    fn test_different_roots_from_json() {
+        // test avec des roots différent entre les numéros "standard" (les 04) et les numéros d'urgence qui commencent par 1
+        let contacts = read_contacts("data/04_common_parts.json").unwrap();
+        let trie = build_trie(&contacts);
+        let text = to_plantuml(&trie);
+        assert!(text.contains("\n* 0\n"));
+        assert!(text.contains("\n* 1\n"));
     }
 }
