@@ -2,7 +2,33 @@
 
 use serde::Deserialize;
 use std::error::Error;
+use std::fmt;
+
 // Les erreurs du programme. (Quentin)
+
+// Erreur renvoyée quand un numéro du fichier JSON n'est pas un numéro valide.
+#[derive(Debug, PartialEq)]
+pub struct InvalidNumberError {
+    pub nb: String,
+    pub name: String,
+}
+
+impl fmt::Display for InvalidNumberError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "numéro invalide \"{}\" pour {} (le numéro doit contenir uniquement des chiffres)",
+            self.nb, self.name
+        )
+    }
+}
+
+impl Error for InvalidNumberError {}
+
+// Un numéro valide n'est pas vide et ne contient que des chiffres.
+pub fn is_valid_number(nb: &str) -> bool {
+    !nb.is_empty() && nb.chars().all(|c| c.is_ascii_digit())
+}
 
 // Le trie qui range les numéros. (Kaan)
 
@@ -263,7 +289,15 @@ pub struct Contact {
 
 pub fn read_contacts(path: &str) -> Result<Vec<Contact>, Box<dyn Error>> {
     let json = std::fs::read_to_string(path)?;
-    let contacts = serde_json::from_str(&json)?;
+    let contacts: Vec<Contact> = serde_json::from_str(&json)?;
+    for contact in &contacts {
+        if !is_valid_number(&contact.nb) {
+            return Err(Box::new(InvalidNumberError {
+                nb: contact.nb.clone(),
+                name: contact.name.clone(),
+            }));
+        }
+    }
     Ok(contacts)
 }
 
@@ -273,7 +307,7 @@ mod json_tests {
 
     #[test]
     fn reads_all_contacts_from_valid_file() {
-        let contacts = read_contacts("data/04_common_parts.json").unwrap();
+        let contacts = read_contacts("data/valid/common_prefix.json").unwrap();
         assert_eq!(contacts.len(), 5);
         assert_eq!(contacts[0].nb, "0412578440");
         assert_eq!(contacts[0].name, "Alice");
@@ -281,7 +315,7 @@ mod json_tests {
 
     #[test]
     fn reads_empty_list() {
-        let contacts = read_contacts("data/08_empty.json").unwrap();
+        let contacts = read_contacts("data/valid/empty.json").unwrap();
         assert!(contacts.is_empty());
     }
 
@@ -292,7 +326,44 @@ mod json_tests {
 
     #[test]
     fn malformed_json_returns_error() {
-        assert!(read_contacts("data/invalid_format.json").is_err());
+        assert!(read_contacts("data/invalid/trailing_comma.json").is_err());
+    }
+
+    #[test]
+    fn number_with_letters_returns_error() {
+        let error = read_contacts("data/invalid/bad_numbers.json").unwrap_err();
+        let error = error.downcast_ref::<InvalidNumberError>().unwrap();
+        assert_eq!(error.nb, "04AB578440");
+        assert_eq!(error.name, "Lettres");
+    }
+
+    #[test]
+    fn missing_name_returns_error() {
+        assert!(read_contacts("data/invalid/missing_field.json").is_err());
+    }
+
+    #[test]
+    fn number_not_a_string_returns_error() {
+        assert!(read_contacts("data/invalid/wrong_type.json").is_err());
+    }
+
+    #[test]
+    fn object_instead_of_list_returns_error() {
+        assert!(read_contacts("data/invalid/not_an_array.json").is_err());
+    }
+
+    #[test]
+    fn valid_numbers() {
+        assert!(is_valid_number("0412578440"));
+        assert!(is_valid_number("15"));
+    }
+
+    #[test]
+    fn invalid_numbers() {
+        assert!(!is_valid_number(""));
+        assert!(!is_valid_number("04AB578440"));
+        assert!(!is_valid_number("+33612345678"));
+        assert!(!is_valid_number("06 12 34 56 78"));
     }
 }
 
@@ -386,7 +457,7 @@ mod plantuml_tests {
     #[test]
     fn test_different_roots_from_json() {
         // test avec des roots différent entre les numéros "standard" (les 04) et les numéros d'urgence qui commencent par 1
-        let contacts = read_contacts("data/04_common_parts.json").unwrap();
+        let contacts = read_contacts("data/valid/common_prefix.json").unwrap();
         let trie = build_trie(&contacts);
         let text = to_plantuml(&trie);
         assert!(text.contains("\n* 0\n"));
