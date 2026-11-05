@@ -463,4 +463,42 @@ mod plantuml_tests {
         assert!(text.contains("\n* 0\n"));
         assert!(text.contains("\n* 1\n"));
     }
+
+    #[test]
+    fn test_build_trie_finds_every_contact() {
+        // chaque contact du fichier doit être retrouvé dans le trie avec son nom
+        let contacts = read_contacts("data/valid/common_prefix.json").unwrap();
+        let trie = build_trie(&contacts);
+        assert_eq!(trie.len(), 5);
+        assert_eq!(trie.get("0412578440"), Some("Alice"));
+        assert_eq!(trie.get("0412199803"), Some("Bob"));
+        assert_eq!(trie.get("0468892011"), Some("patate"));
+        assert_eq!(trie.get("112"), Some("Urgences"));
+        assert_eq!(trie.get("15"), Some("SAMU"));
+    }
+
+
+    #[test]
+    fn test_prefix_chain_from_json() {
+        // 1, 12, 123, 1234 : une seule branche avec un nom à chaque niveau
+        let contacts = read_contacts("data/valid/prefix_chain.json").unwrap();
+        let trie = build_trie(&contacts);
+
+        let expected = [
+            "@startmindmap",
+            "* 1",
+            "** Un",
+            "** 2",
+            "*** Douze",
+            "*** 3",
+            "**** Cent vingt-trois",
+            "**** 4",
+            "***** Mille deux cent trente-quatre",
+            "@endmindmap",
+            "",
+        ]
+        .join("\n");
+        assert_eq!(to_plantuml(&trie), expected);
+    }
+
 }
